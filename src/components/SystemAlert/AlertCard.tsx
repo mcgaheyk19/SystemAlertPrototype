@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { AlertData } from '../../types/alerts';
@@ -28,7 +28,15 @@ function DismissIcon() {
 export default function AlertCard({ alert, width, leftGap = 0, onDismiss, fixedHeight, onHeightMeasured }: Props) {
   const opacity = useRef(new Animated.Value(1)).current;
   const scale = useRef(new Animated.Value(1)).current;
-  const animWidth = useRef(new Animated.Value(width + leftGap)).current;
+  const animWidth = useRef(new Animated.Value(width)).current;
+  const animMarginLeft = useRef(new Animated.Value(leftGap)).current;
+
+  // When a preceding card is dismissed, leftGap changes for the new first card
+  // (e.g. index 1 becomes index 0, leftGap goes from 8 to 0). useLayoutEffect
+  // fires synchronously before paint so there's never a frame with wrong spacing.
+  useLayoutEffect(() => {
+    animMarginLeft.setValue(leftGap);
+  }, [leftGap]);
 
   const handleDismissPress = () => {
     // Phase 1: scale down + fade out (native driver, 140ms ease-in)
@@ -46,26 +54,34 @@ export default function AlertCard({ alert, width, leftGap = 0, onDismiss, fixedH
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // Phase 2: collapse layout width so remaining cards slide over (JS driver, 110ms ease-out)
-      Animated.timing(animWidth, {
-        toValue: 0,
-        duration: 110,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: false,
-      }).start(() => {
+      // Phase 2: collapse card width and leading gap so remaining cards slide over (JS driver, 110ms ease-out)
+      Animated.parallel([
+        Animated.timing(animWidth, {
+          toValue: 0,
+          duration: 110,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: false,
+        }),
+        Animated.timing(animMarginLeft, {
+          toValue: 0,
+          duration: 110,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: false,
+        }),
+      ]).start(() => {
         onDismiss(alert.id);
       });
     });
   };
 
   return (
-    // Outer wrapper: animated width collapses to close the gap (JS driver)
+    // Outer wrapper: card width + leading gap both collapse on dismiss (JS driver)
     // No overflow:hidden needed — card is already invisible before width collapses
-    <Animated.View style={{ width: animWidth }}>
+    <Animated.View style={{ width: animWidth, marginLeft: animMarginLeft }}>
       <Animated.View
         style={[
           styles.outer,
-          { width, marginLeft: leftGap },
+          { width },
           fixedHeight ? { height: fixedHeight } : undefined,
           { opacity, transform: [{ scale }] },
         ]}
