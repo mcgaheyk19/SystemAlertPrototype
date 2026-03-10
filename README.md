@@ -1,6 +1,6 @@
 # SystemAlert Prototype
 
-An iOS design prototype built with Expo and React Native. It demonstrates a `SystemAlert` carousel component intended to sit at the top of the parent and/or kid homepage on the Till app — swipeable alert cards with haptic feedback, animated page indicators, and a skeleton wireframe layout for context.
+An iOS design prototype built with Expo and React Native. It demonstrates two carousel components — `SystemAlert` and `Billboard` — intended to sit on the parent and/or kid homepage of the Till app. Both feature swipeable cards with haptic feedback, animated page indicators, and dismissal animations, set against a skeleton wireframe layout for context.
 
 ---
 
@@ -21,16 +21,18 @@ npx expo start --ios
 
 This opens the iOS simulator and loads the app automatically.
 
+To test on a physical device, install [Expo Go](https://expo.dev/go) from the App Store, make sure your phone is on the same WiFi network as your Mac, then scan the QR code that appears in the terminal.
+
 ---
 
 ## What's in here
 
 ### `SystemAlert` component
 
-The core of the prototype. Accepts an array of `AlertData` and renders either a single card or a swipeable carousel depending on how many alerts are present.
+Sits at the top of the homescreen. Accepts an array of `AlertData` and renders either a single card or a swipeable carousel.
 
 - Swipe left/right to move between alerts — snaps to each card with haptic feedback
-- Page indicator dots below the carousel animate in size on snap and blend color in real time as you drag
+- Page indicator dots animate in size on snap and blend color in real time as you drag
 - Dismissible alerts have an X button; tapping it plays a shrink + fade animation then closes the gap
 - Automatically collapses when all alerts are dismissed
 
@@ -52,13 +54,40 @@ interface AlertSegment {
 
 The `segments` array lets you compose alerts with inline tappable CTAs — for example, plain text followed by an underlined "Complete order." link.
 
+---
+
+### `Billboard` component
+
+Sits below the promotional banner skeleton on the homescreen. Accepts an array of `BillboardData` and renders a swipeable carousel of richer action cards.
+
+- Same swipe, snap, haptic, and page indicator behaviour as `SystemAlert`
+- Each card has a blue gradient icon circle, bold headline, support text, and a CTA button
+- Dismissible cards have an X button with the same shrink + fade dismiss animation
+- Automatically collapses when all cards are dismissed
+
+**Billboard data shape:**
+
+```ts
+interface BillboardData {
+  id: string;
+  headline: string;
+  supportText: string;
+  ctaLabel: string;
+  onCtaPress?: () => void;
+  dismissible: boolean;
+  iconType: 'spend-limit' | 'gmoot' | 'trip';
+}
+```
+
+---
+
 ### Skeleton homescreen
 
-A static wireframe layout that gives the `SystemAlert` component realistic visual context: header, promotional banner, account card, and quick-action grid.
+A static wireframe layout that gives both carousel components realistic visual context: header, promotional banner, account card, and quick-action grid.
 
 ### Test buttons
 
-At the bottom of the screen, four buttons let you hot-swap between alert scenarios without restarting the app. Use these to review how the component looks and behaves across different states:
+At the bottom of the screen, four buttons let you hot-swap between alert scenarios without restarting the app. Pressing any button also resets the Billboard carousel back to all three cards.
 
 | Button | Scenario |
 |---|---|
@@ -67,8 +96,6 @@ At the bottom of the screen, four buttons let you hot-swap between alert scenari
 | 1 fixed + 2 dismissible | Mixed set of three |
 | 2 dismissible alerts | Two dismissible-only alerts |
 
-Dismissible alerts can be swiped away using the X button. Once all alerts are dismissed the section collapses — tap any button to reload a scenario.
-
 ---
 
 ## Project structure
@@ -76,18 +103,30 @@ Dismissible alerts can be swiped away using the X button. Once all alerts are di
 ```
 App.tsx                         # Entry point, loads fonts
 src/
-  types/alerts.ts               # AlertData and AlertSegment types
-  data/sampleAlerts.ts          # Pre-built alert fixtures
+  types/
+    alerts.ts                   # AlertData and AlertSegment types
+    billboard.ts                # BillboardData type
+  data/
+    sampleAlerts.ts             # Pre-built alert fixtures
+    sampleBillboards.ts         # Pre-built billboard fixtures
   components/
-    SystemAlert/                # Carousel component and sub-components
+    SystemAlert/                # Alert carousel and sub-components
       SystemAlert.tsx           # Stateful container, scroll + dismiss logic
       AlertCard.tsx             # Individual card with dismiss animation
       AlertIcon.tsx             # Gradient red SVG icon
       AlertText.tsx             # Inline text with tappable CTA segments
-      PageIndicators.tsx        # Animated dot row
+      PageIndicators.tsx        # Animated dot row (shared with Billboard)
+    Billboard/                  # Billboard carousel and sub-components
+      Billboard.tsx             # Stateful container, scroll + dismiss logic
+      BillboardCard.tsx         # Individual card with icon, text, CTA, dismiss
+      BillboardIconCircle.tsx   # Blue gradient SVG icon circle
     skeleton/                   # Wireframe placeholder components
   screens/
     HomeScreen.tsx              # Full layout + test buttons
+assets/
+  IconSpendLimit.svg            # Spend limit icon
+  IconGMOOT.svg                 # Get the most out of Till icon
+  IconTrip.svg                  # Trip icon
 ```
 
 ---
@@ -97,5 +136,5 @@ src/
 - [Expo SDK 54](https://docs.expo.dev) — managed workflow
 - [React Native Animated API](https://reactnative.dev/docs/animations) — all animations (no third-party animation library)
 - [expo-haptics](https://docs.expo.dev/versions/latest/sdk/haptics/) — haptic feedback on card snap
-- [react-native-svg](https://github.com/software-mansion/react-native-svg) — alert icon
+- [react-native-svg](https://github.com/software-mansion/react-native-svg) — SVG icons and gradients
 - [Nunito](https://fonts.google.com/specimen/Nunito) variable font via expo-font
