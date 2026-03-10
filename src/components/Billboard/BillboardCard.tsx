@@ -32,8 +32,27 @@ interface Props {
 export default function BillboardCard({ card, width, leftGap = 0, onDismiss }: Props) {
   const opacity = useRef(new Animated.Value(1)).current;
   const scale = useRef(new Animated.Value(1)).current;
+  const pressScale = useRef(new Animated.Value(1)).current;
   const animWidth = useRef(new Animated.Value(width)).current;
   const animMarginLeft = useRef(new Animated.Value(leftGap)).current;
+
+  const handlePressIn = () => {
+    Animated.timing(pressScale, {
+      toValue: 0.982,
+      duration: 100,
+      easing: Easing.in(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.timing(pressScale, {
+      toValue: 1,
+      duration: 150,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  };
 
   useLayoutEffect(() => {
     animMarginLeft.setValue(leftGap);
@@ -86,7 +105,7 @@ export default function BillboardCard({ card, width, leftGap = 0, onDismiss }: P
         style={[
           styles.card,
           { width, height: CARD_HEIGHT },
-          { opacity, transform: [{ scale }] },
+          { opacity, transform: [{ scale }, { scale: pressScale }] },
         ]}
       >
         {/* Icon circle */}
@@ -104,7 +123,9 @@ export default function BillboardCard({ card, width, leftGap = 0, onDismiss }: P
         <TouchableOpacity
           style={[styles.ctaButton, { width: width - 32 }]}
           onPress={card.onCtaPress}
-          activeOpacity={0.7}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          activeOpacity={1}
         >
           <Text style={styles.ctaLabel}>{card.ctaLabel}</Text>
         </TouchableOpacity>

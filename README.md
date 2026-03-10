@@ -62,6 +62,7 @@ Sits below the promotional banner skeleton on the homescreen. Accepts an array o
 
 - Same swipe, snap, haptic, and page indicator behaviour as `SystemAlert`
 - Each card has a blue gradient icon circle, bold headline, support text, and a CTA button
+- Pressing the CTA button plays a subtle card-level press-in effect — the whole card scales down slightly on finger down and springs back on release
 - Dismissible cards have an X button with the same shrink + fade dismiss animation
 - Automatically collapses when all cards are dismissed
 
