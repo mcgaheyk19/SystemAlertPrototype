@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, View, TouchableOpacity, Text } from 'react-native';
 import { SystemAlert } from '../components/SystemAlert';
+import { Billboard } from '../components/Billboard';
 import { AlertData } from '../types/alerts';
 import { SAMPLE_ALERTS } from '../data/sampleAlerts';
+import { SAMPLE_BILLBOARDS } from '../data/sampleBillboards';
 import HeaderSkeleton from '../components/skeleton/HeaderSkeleton';
 import BannerSkeleton from '../components/skeleton/BannerSkeleton';
 import AccountCardSkeleton from '../components/skeleton/AccountCardSkeleton';
@@ -101,7 +103,7 @@ const ALERT_SETS: { label: string; alerts: AlertData[] }[] = [
 ];
 
 export default function HomeScreen() {
-  // testAlerts controls which alerts are shown; resetKey forces a remount when either changes.
+  // resetKey forces a remount of both carousels when a test button is pressed.
   const [resetKey, setResetKey] = useState(0);
   const [testAlerts, setTestAlerts] = useState<AlertData[]>(SAMPLE_ALERTS);
 
@@ -130,6 +132,11 @@ export default function HomeScreen() {
         {/* Banner */}
         <View style={styles.section}>
           <BannerSkeleton />
+        </View>
+
+        {/* Billboard Carousel */}
+        <View style={styles.billboardSection}>
+          <Billboard key={`billboard-${resetKey}`} cards={SAMPLE_BILLBOARDS} />
         </View>
 
         {/* Account Card */}
@@ -179,6 +186,9 @@ const styles = StyleSheet.create({
   },
   section: {
     marginHorizontal: 16,
+    marginBottom: 20,
+  },
+  billboardSection: {
     marginBottom: 20,
   },
   testSection: {
